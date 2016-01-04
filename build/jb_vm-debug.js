@@ -6,10 +6,17 @@ var SRC_REG_1_OFFSET = 16;
 var SRC_REG_2_OFFSET = 12;
 var CONSTANT_OFFSET = 0;
 
-var OPCODES = {
+//look up OPCODE names by value
+var OPCODE_NAMES = ["halt", // 0x00 //
+"add", // 0x01 //
+"loadi" // 0x02 //
+];
+
+//look up OPCODE values by name
+var OPCODE_VALUES = {
   halt: 0x00,
-  loadi: 0x01,
-  add: 0x02
+  add: 0x01,
+  loadi: 0x02
 };
 
 var REGISTERS = {
@@ -58,89 +65,31 @@ var registers = {
   vm: 12,
   ih: 13,
   sp: 14,
-  pc: 15
+  pc: 0
 };
 
-var halt = function halt() {
+var halt = function halt(instr) {
   running = false;
   console.log("halting");
-  return undefined;
 };
 
-var loadi = function loadi() {
-  return function (register) {
-    return function (integer) {
-      registers[register] = integer;
-      console.log(register + " = " + registers[register]);
-      return undefined;
-    };
-  };
+var add = function add(instr) {
+  console.log("add");
 };
 
-var add = function add() {
-  return function (result_reg) {
-    return function (addend_reg1) {
-      return function (addend_reg2) {
-        registers[result_reg] = registers[addend_reg1] + registers[addend_reg2];
-        console.log(result_reg + " = " + addend_reg1 + " + " + addend_reg2);
-        console.log(registers[result_reg] + " = " + registers[addend_reg1] + " + " + registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var sub = function sub() {
-  return function (result_reg) {
-    return function (addend_reg1) {
-      return function (addend_reg2) {
-        registers[result_reg] = registers[addend_reg1] - registers[addend_reg2];
-        console.log(result_reg + " = " + addend_reg1 + " - " + addend_reg2);
-        console.log(registers[result_reg] + " = " + registers[addend_reg1] + " - " + registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var mul = function mul() {
-  return function (result_reg) {
-    return function (addend_reg1) {
-      return function (addend_reg2) {
-        registers[result_reg] = registers[addend_reg1] * registers[addend_reg2];
-        console.log(result_reg + " = " + addend_reg1 + " * " + addend_reg2);
-        console.log(registers[result_reg] + " = " + registers[addend_reg1] + " * " + registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var div = function div() {
-  return function (result_reg) {
-    return function (addend_reg1) {
-      return function (addend_reg2) {
-        registers[result_reg] = registers[addend_reg1] / registers[addend_reg2];
-        console.log(result_reg + " = " + addend_reg1 + " / " + addend_reg2);
-        console.log(registers[result_reg] + " = " + registers[addend_reg1] + " / " + registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
+var loadi = function loadi(instr) {
+  console.log("loadi");
 };
 
 var instructions = {
   halt: halt,
   loadi: loadi,
-  add: add,
-  sub: sub,
-  mul: mul,
-  div: div
+  add: add
 };
 
 var fetch = function fetch() {
-  var next = prog[pc];
-  pc += 1;
+  var next = memory[registers.pc];
+  registers.pc += 1;
   return next;
 };
 
@@ -154,31 +103,29 @@ var decode = function decode(instr) {
   };
 };
 
-var evaluate = (function () {
-  var partially_applied_instruction;
-  return function (arg) {
-    if (partially_applied_instruction !== undefined) {
-      partially_applied_instruction = partially_applied_instruction(arg);
-      if (typeof partially_applied_instruction !== "function") {
-        partially_applied_instruction = undefined;
-      }
-    } else {
-      partially_applied_instruction = instructions[arg]();
-    }
-  };
-})();
+var evaluate = function evaluate(instr) {
+  var op = OPCODE_NAMES[instr.opcode];
+  var execution_function = instructions[op];
+  execution_function(instr);
+};
 
 var main = function main() {
   while (running) {
-    evaluate(fetch());
+    evaluate(decode(fetch()));
   }
 };
 
-var pack_instruction = function pack_instruction(opcode, dest_reg, src_reg_1, src_reg_2, constant) {
+var pack_instruction = function pack_instruction(instruction) {
+  var opcode = instruction[0];
+  var dest_reg = instruction[1];
+  var src_reg_1 = instruction[2];
+  var src_reg_2 = instruction[3];
+  var constant = instruction[4];
+
   var instr;
   var reg;
   if (opcode) {
-    var op = OPCODES[opcode];
+    var op = OPCODE_VALUES[opcode];
     instr = pack(instr, op, OPCODE_OFFSET);
   }
   if (dest_reg) {
@@ -203,9 +150,9 @@ var pack = function pack(instr, field, offset) {
   return instr | field << offset;
 };
 
-var prog = ["loadi", "reg1", 1, "loadi", "reg2", 2, "add", "reg3", "reg1", "reg2", "halt"];
+var memory = [["loadi", "reg1", null, null, 1], ["loadi", "reg2", null, null, 2], ["add", "reg3", "reg1", "reg2", null], ["halt", null, null, null, null]].map(pack_instruction);
 
 main();
 
-console.log("packing loadi reg1 5: " + pack_instruction("loadi", "reg1", null, null, 5).toString(16));
+console.log("packing loadi reg1 5: " + pack_instruction(["loadi", "reg1", null, null, 5]).toString(16));
 //# sourceMappingURL=jb_vm-debug.js.map

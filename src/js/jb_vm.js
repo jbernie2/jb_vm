@@ -4,10 +4,18 @@ const SRC_REG_1_OFFSET = 16;
 const SRC_REG_2_OFFSET = 12; 
 const CONSTANT_OFFSET = 0;
 
-const OPCODES = {
-  halt : 0x00,
-  loadi: 0x01,
-  add  : 0x02
+//look up OPCODE names by value
+const OPCODE_NAMES = [
+  "halt" , // 0x00 //
+  "add"  , // 0x01 //
+  "loadi"  // 0x02 //
+];
+
+//look up OPCODE values by name
+const OPCODE_VALUES = {
+  halt :0x00,
+  add  :0x01,
+  loadi:0x02
 };
 
 const REGISTERS = {
@@ -56,90 +64,32 @@ var registers = {
   vm:12,
   ih:13,
   sp:14,
-  pc:15
+  pc:0
 };
 
 
-var halt = function(){
+var halt = function(instr){
   running = false;
   console.log("halting");
-  return undefined;
 };
 
-var loadi = function() {
-  return function(register){
-    return function(integer){
-      registers[register] = integer;
-      console.log(register+" = "+registers[register]);
-      return undefined;
-    };
-  };
+var add = function(instr){
+  console.log("add");
 };
 
-var add = function() {
-  return function(result_reg){
-    return function(addend_reg1){
-      return function(addend_reg2){
-        registers[result_reg] = registers[addend_reg1] + registers[addend_reg2];
-        console.log(result_reg+" = "+addend_reg1+" + "+addend_reg2);
-        console.log(registers[result_reg]+" = "+registers[addend_reg1]+" + "+registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
+var loadi = function(instr){
+  console.log("loadi");
 };
 
-var sub = function() {
-  return function(result_reg){
-    return function(addend_reg1){
-      return function(addend_reg2){
-        registers[result_reg] = registers[addend_reg1] - registers[addend_reg2];
-        console.log(result_reg+" = "+addend_reg1+" - "+addend_reg2);
-        console.log(registers[result_reg]+" = "+registers[addend_reg1]+" - "+registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var mul = function() {
-  return function(result_reg){
-    return function(addend_reg1){
-      return function(addend_reg2){
-        registers[result_reg] = registers[addend_reg1] * registers[addend_reg2];
-        console.log(result_reg+" = "+addend_reg1+" * "+addend_reg2);
-        console.log(registers[result_reg]+" = "+registers[addend_reg1]+" * "+registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var div = function() {
-  return function(result_reg){
-    return function(addend_reg1){
-      return function(addend_reg2){
-        registers[result_reg] = registers[addend_reg1] / registers[addend_reg2];
-        console.log(result_reg+" = "+addend_reg1+" / "+addend_reg2);
-        console.log(registers[result_reg]+" = "+registers[addend_reg1]+" / "+registers[addend_reg2]);
-        return undefined;
-      };
-    };
-  };
-};
-
-var instructions = {
+const instructions = {
   halt:halt,
   loadi:loadi,
-  add:add,
-  sub:sub,
-  mul:mul,
-  div:div
+  add:add
 };
 
 var fetch = function(){
-  var next = prog[pc];
-  pc += 1;
+  var next = memory[registers.pc];
+  registers.pc += 1;
   return next;
 };
 
@@ -153,32 +103,29 @@ var decode = function(instr){
   }; 
 };
 
-var evaluate = function(){
-  var partially_applied_instruction;
-  return function(arg){
-    if(partially_applied_instruction !== undefined){
-      partially_applied_instruction = partially_applied_instruction(arg);
-      if(typeof partially_applied_instruction !== "function"){
-        partially_applied_instruction = undefined;
-      }
-    }else{
-      partially_applied_instruction = instructions[arg]();
-    }
-  };
-}();
+var evaluate = function(instr){
+   const op = OPCODE_NAMES[instr.opcode];
+   const execution_function = instructions[op];
+   execution_function(instr);
+};
 
 var main = function(){
   while(running){
-    evaluate(fetch());
+    evaluate(decode(fetch()));
   }
 };
 
-var pack_instruction = function(opcode, dest_reg, src_reg_1, src_reg_2, 
-  constant){
+var pack_instruction = function(instruction){
+  const opcode    = instruction[0];
+  const dest_reg  = instruction[1];
+  const src_reg_1 = instruction[2];
+  const src_reg_2 = instruction[3];
+  const constant  = instruction[4];
+
   var instr;
   var reg;
   if(opcode){
-    var op = OPCODES[opcode];
+    var op = OPCODE_VALUES[opcode];
     instr = pack(instr,op,OPCODE_OFFSET);
   }
   if(dest_reg){
@@ -203,13 +150,13 @@ var pack = function(instr,field,offset){
   return instr | (field << offset);
 };
 
-var prog = [
-  "loadi", "reg1", 1,
-  "loadi", "reg2", 2,
-  "add", "reg3", "reg1", "reg2",
-  "halt" 
-];
+var memory = [
+  ["loadi", "reg1", null  , null  , 1],
+  ["loadi", "reg2", null  , null  , 2],
+  ["add"  , "reg3", "reg1", "reg2", null],
+  ["halt" , null  , null  , null  , null] 
+].map(pack_instruction);
 
 main();
 
-console.log("packing loadi reg1 5: "+ pack_instruction("loadi","reg1",null,null,5).toString(16));
+console.log("packing loadi reg1 5: "+ pack_instruction(["loadi","reg1",null,null,5]).toString(16));
