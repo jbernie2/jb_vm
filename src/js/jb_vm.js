@@ -1,3 +1,9 @@
+import REGISTER_LOOKUP from './constants_lookup_tables';
+
+//console.log(REGISTER_LOOKUP[0x0]);
+//console.log(REGISTER_LOOKUP["reg0"]);
+
+
 const OPCODE_OFFSET = 24;
 const DEST_REG_OFFSET = 20;
 const SRC_REG_1_OFFSET = 16;
@@ -8,14 +14,14 @@ const CONSTANT_OFFSET = 0;
 const OPCODE_NAMES = [
   "halt" , // 0x00 //
   "add"  , // 0x01 //
-  "loadi"  // 0x02 //
+  "loadl"  // 0x02 //
 ];
 
 //look up OPCODE values by name
 const OPCODE_VALUES = {
   halt :0x00,
   add  :0x01,
-  loadi:0x02
+  loadl:0x02
 };
 
 const REGISTERS = {
@@ -77,13 +83,13 @@ var add = function(instr){
   console.log("add");
 };
 
-var loadi = function(instr){
-  console.log("loadi");
+var loadl = function(instr){
+  console.log("loadl");
 };
 
 const instructions = {
   halt:halt,
-  loadi:loadi,
+  loadl:loadl,
   add:add
 };
 
@@ -151,12 +157,12 @@ var pack = function(instr,field,offset){
 };
 
 var memory = [
-  ["loadi", "reg1", null  , null  , 1],
-  ["loadi", "reg2", null  , null  , 2],
+  ["loadl", "reg1", null  , null  , 1],
+  ["loadl", "reg2", null  , null  , 2],
   ["add"  , "reg3", "reg1", "reg2", null],
   ["halt" , null  , null  , null  , null] 
 ].map(pack_instruction);
 
 main();
 
-console.log("packing loadi reg1 5: "+ pack_instruction(["loadi","reg1",null,null,5]).toString(16));
+console.log("packing loadl reg1 5: "+ pack_instruction(["loadl","reg1",null,null,5]).toString(16));

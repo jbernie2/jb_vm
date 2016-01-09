@@ -14,9 +14,10 @@ module.exports = function(grunt) {
   var TARGET_RAW = BUILD_DIR + '/jb_vm-debug.js';
   var TARGET_MIN = BUILD_DIR + '/jb_vm-min.js';
   
+  var JS_DIR = 'src/js';
   var HTML_DIR = 'src/html';
   var CSS_DIR = 'src/css';
-  var SUPPORT_DIR = 'support'
+  var SUPPORT_DIR = 'support';
   
   var SOURCES = [ "src/js/*.js" ];
 
@@ -31,24 +32,26 @@ module.exports = function(grunt) {
         dest: TARGET_RAW
       }
     },
+    /*
     uglify: {
       options: {
         banner: BANNER,
-        sourceMap: true
+        sourceMap: false
       },
       build: {
         src: TARGET_RAW,
         dest: TARGET_MIN
       }
     },
-    /*
+    */
     browserify: {
       jb_vm: {
         options: {
+          transform: [["babelify", { presets: ["es2015"]}]],
           banner: BANNER,
           browserifyOptions: {
-            debug: true,
-            standalone: "jb_vm"
+            //debug: true
+            //standalone: "jb_vm"
           }
         },
         files: [
@@ -56,26 +59,18 @@ module.exports = function(grunt) {
         ]
       }
     },
-    */
-    "babel": {
-      options: {
-        sourceMap: true
-      },
-      dist: {
-        files: [
-          { src: SOURCES, dest: TARGET_RAW }
-        ]
-      }
-    },
+    
     jshint: {
       files: SOURCES,
       options: {
         eqnull: true,   // allow == and ~= for nulls
         sub: true,      // don't enforce dot notation
         trailing: true, // no more trailing spaces
-        esnext: true
+        esnext: true,
+        debug: true
       }
     },
+
     copy: {
       release: {
         files: [
@@ -102,7 +97,7 @@ module.exports = function(grunt) {
             src   : ['*.css']
           },
         ]
-      }
+      },
     },
     docco: {
       src: SOURCES,
@@ -126,5 +121,5 @@ module.exports = function(grunt) {
   
 
   // Default task(s).
-  grunt.registerTask('default', ['jshint', 'babel', 'uglify', 'copy:build']);
+  grunt.registerTask('default', ['jshint', 'browserify:jb_vm', /*'uglify',*/ 'copy:build']);
 };
