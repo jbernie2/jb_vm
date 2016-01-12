@@ -1,35 +1,19 @@
 {
-  "name": "jb_vm",
-  "version": "0.0.1",
-  "author": {
-    "name": "John Bernier",
-    "email": "john.b.bernier@gmail.com"
+  "name": "browserify-babel-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "grunt": "^0.4.5"
   },
-  "main": "src/jb_vm.js",
-  "description": "virtual machine written in javascript",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jbernie2/jb_vm"
-  },
-  "license": "Free for non-commercial use",
   "devDependencies": {
-    "babelify":"",
-    "browserify": "^6.3.3",
-    "docco": "^0.6.3",
-    "glob": "^4.2.1",
-    "grunt": "^0.4.5",
-    "grunt-babel": "^6.0.0",
-    "grunt-browserify": "^3.2.1",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-contrib-concat": "^0.5.0",
-    "grunt-contrib-copy": "^0.7.0",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-contrib-uglify": "^0.6.0",
-    "grunt-docco": "^0.3.3",
-    "babel-preset-es2015": ""
+    "babelify": "^6.1.0",
+    "grunt-browserify": "^3.8.0",
+    "grunt-contrib-watch": "^0.6.1"
   },
-  "babel":{
-    "presets": ["es2015"]
-  }
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }

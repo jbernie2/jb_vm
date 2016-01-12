@@ -1,7 +1,6 @@
 
 //list of registers with their assembly name and number
-export const REGISTERS = [
-
+export const REGISTER_LIST = [
   //general purpose registers
   ["reg0", 0x0],
   ["reg1", 0x1],

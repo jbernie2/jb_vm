@@ -1,5 +1,6 @@
-import REGISTERS from './registers';
-import OPCODES from './opcodes';
+import {OFFSET_LIST} from './INSTRUCTION_CONSTANTS.js'
+import {REGISTER_LIST} from './registers';
+import {OPCODE_LIST} from './opcodes';
 
 const two_way_lookup_table = function(values){
   var lookup = {};
@@ -10,5 +11,6 @@ const two_way_lookup_table = function(values){
   return lookup;
 };
 
-export const REGISTER_LOOKUP = two_way_lookup_table(REGISTERS);
-export const OPCODE_LOOKUP = two_way_lookup_table(OPCODES);
+export const INSTR_OFFSETS = OFFSET_LIST;
+export const REGISTERS     = two_way_lookup_table(REGISTER_LIST);
+export const OPCODES       = two_way_lookup_table(OPCODE_LIST);
