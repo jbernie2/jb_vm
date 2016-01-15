@@ -2,30 +2,26 @@ import {REGISTERS, OPCODES, INSTR_OFFSETS} from './constants_lookup_tables';
 console.log(REGISTERS);
 console.log(OPCODES);
 
-console.log("0x0: "+REGISTERS[0x0]);
-console.log("reg0: "+REGISTERS["reg0"]);
-
-
 var pc = 0;
 var running = true;
 var stack = [];
 var registers = {
   reg0:0,
-  reg1:1,
-  reg2:2,
-  reg3:3,
-  reg4:4,
-  reg5:5,
-  reg6:6,
-  reg7:7,
+  reg1:0,
+  reg2:0,
+  reg3:0,
+  reg4:0,
+  reg5:0,
+  reg6:0,
+  reg7:0,
 
-  reg8:8,
-  reg9:9,
-  rega:10,
-  regb:11,
-  vm:12,
-  ih:13,
-  sp:14,
+  reg8:0,
+  reg9:0,
+  rega:0,
+  regb:0,
+  vm:0,
+  ih:0,
+  sp:0,
   pc:0
 };
 
@@ -35,18 +31,45 @@ var halt = function(instr){
   console.log("halting");
 };
 
-var add = function(instr){
-  console.log("add");
+//TODO: handle overflow, wrap around
+var addi = function(instr){
+  registers[instr.dest_reg] = 
+    registers[instr.src_reg_1] + registers[instr.src_reg_2];
+};
+
+//TODO: handle underflow eg. less than 0, wrap around
+var subi = function(instr){
+  registers[instr.dest_reg] = 
+    registers[instr.src_reg_1] - registers[instr.src_reg_2];
 };
 
 var loadl = function(instr){
-  console.log("loadl");
+  //clear low 2 bytes
+  registers[instr.dest_reg] = (registers[instr.dest_reg] & 0xFF00) 
+  
+  //replace low 2 bytes with constant
+  registers[instr.dest_reg] = 
+    registers[instr.dest_reg] | instr.constant;
+};
+
+var loadh = function(instr){
+  //clear high 2 bytes
+  registers[instr.dest_reg] = (registers[instr.dest_reg] & 0x00FF) 
+
+  //shift constant two bytes
+  instr.constant = instr.constant << 16;
+  
+  //replace high 2 bytes with constant
+  registers[instr.dest_reg] = 
+    registers[instr.dest_reg] | instr.constant;
 };
 
 const instructions = {
   halt:halt,
   loadl:loadl,
-  add:add
+  addi:addi,
+  subi:subi,
+  loadh:loadh
 };
 
 var fetch = function(){
@@ -66,8 +89,12 @@ var decode = function(instr){
 };
 
 var evaluate = function(instr){
-   const op = OPCODES[instr.opcode];
-   const execution_function = instructions[op];
+   instr.opcode    = OPCODES[instr.opcode];
+   instr.dest_reg  = REGISTERS[instr.dest_reg];
+   instr.src_reg_1 = REGISTERS[instr.src_reg_1];
+   instr.src_reg_2 = REGISTERS[instr.src_reg_2];
+
+   const execution_function = instructions[instr.opcode];
    execution_function(instr);
 };
 
@@ -113,9 +140,14 @@ var pack = function(instr,field,offset){
 };
 
 var memory = [
-  ["loadl", "reg1", null  , null  , 1],
-  ["loadl", "reg2", null  , null  , 2],
-  ["add"  , "reg3", "reg1", "reg2", null],
+  ["loadl", "reg1", null  , null  ,    1],
+  ["loadh", "reg1", null  , null  ,    1],
+  ["loadl", "reg2", null  , null  ,    2],
+  ["loadh", "reg2", null  , null  ,    2],
+  ["addi" , "reg3", "reg1", "reg2", null],
+  ["loadl", "reg0", null  , null  ,   16],
+  ["loadl", "reg4", null  , null  ,    7],
+  ["subi" , "reg5", "reg0", "reg4", null],
   ["halt" , null  , null  , null  , null] 
 ].map(pack_instruction);
 
