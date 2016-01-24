@@ -1,4 +1,31 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _instruction_constantsJs = require('./instruction_constants.js');
+
+var _registers = require('./registers');
+
+var _opcodes = require('./opcodes');
+
+var two_way_lookup_table = function two_way_lookup_table(values) {
+  var lookup = {};
+  values.forEach(function (a) {
+    lookup[a[0]] = a[1];
+    lookup[a[1]] = a[0];
+  });
+  return lookup;
+};
+
+var INSTR_OFFSETS = _instruction_constantsJs.OFFSET_LIST;
+exports.INSTR_OFFSETS = INSTR_OFFSETS;
+var REGISTERS = two_way_lookup_table(_registers.REGISTER_LIST);
+exports.REGISTERS = REGISTERS;
+var OPCODES = two_way_lookup_table(_opcodes.OPCODE_LIST);
+exports.OPCODES = OPCODES;
+
+},{"./instruction_constants.js":2,"./opcodes":4,"./registers":6}],2:[function(require,module,exports){
 //All instructions are 32 bit
 //There are currently two instruction formats
 
@@ -27,34 +54,7 @@ var OFFSET_LIST = {
 };
 exports.OFFSET_LIST = OFFSET_LIST;
 
-},{}],2:[function(require,module,exports){
-'use strict';
-
-exports.__esModule = true;
-
-var _INSTRUCTION_CONSTANTSJs = require('./INSTRUCTION_CONSTANTS.js');
-
-var _registers = require('./registers');
-
-var _opcodes = require('./opcodes');
-
-var two_way_lookup_table = function two_way_lookup_table(values) {
-  var lookup = {};
-  values.forEach(function (a) {
-    lookup[a[0]] = a[1];
-    lookup[a[1]] = a[0];
-  });
-  return lookup;
-};
-
-var INSTR_OFFSETS = _INSTRUCTION_CONSTANTSJs.OFFSET_LIST;
-exports.INSTR_OFFSETS = INSTR_OFFSETS;
-var REGISTERS = two_way_lookup_table(_registers.REGISTER_LIST);
-exports.REGISTERS = REGISTERS;
-var OPCODES = two_way_lookup_table(_opcodes.OPCODE_LIST);
-exports.OPCODES = OPCODES;
-
-},{"./INSTRUCTION_CONSTANTS.js":1,"./opcodes":4,"./registers":6}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 var _constants_lookup_tables = require('./constants_lookup_tables');
@@ -140,7 +140,7 @@ main();
 
 console.log("packing loadl reg1 5: " + pack_instruction(["loadl", "reg1", null, null, 5]).toString(16));
 
-},{"./constants_lookup_tables":2,"./operations.js":5,"./state.js":7}],4:[function(require,module,exports){
+},{"./constants_lookup_tables":1,"./operations.js":5,"./state.js":7}],4:[function(require,module,exports){
 // list of OPCODES with thier assembly name and instruction code
 "use strict";
 

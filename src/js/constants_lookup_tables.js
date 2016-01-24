@@ -1,4 +1,4 @@
-import {OFFSET_LIST} from './INSTRUCTION_CONSTANTS.js'
+import {OFFSET_LIST} from './instruction_constants.js'
 import {REGISTER_LIST} from './registers';
 import {OPCODE_LIST} from './opcodes';
 
