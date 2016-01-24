@@ -1,7 +1,3 @@
-/**
- * Created by ritz078 on 14/05/15.
- */
-
 module.exports=function(grunt){
     grunt.initConfig({
         browserify:{
