@@ -29,3 +29,12 @@ export const REGISTER_LIST = [
   //program counter
   ["pc"  , 0xf]
 ];
+
+//registers that can only be accessed using special instructions
+export const RESTRICTED_REGISTER_LIST = [
+  //stops the machine
+  ["halt", "n/a"]
+];
+
+export const ALL_REGISTERS_LIST = 
+  REGISTER_LIST.concat(RESTRICTED_REGISTER_LIST);

@@ -1,80 +1,14 @@
-import {REGISTERS, OPCODES, INSTR_OFFSETS} from './constants_lookup_tables';
-console.log(REGISTERS);
-console.log(OPCODES);
+import { REGISTERS, OPCODES, INSTR_OFFSETS } from './constants_lookup_tables';
+import { operations }                        from './operations.js';
+import { state }                             from './state.js';
 
-var pc = 0;
-var running = true;
-var stack = [];
-var registers = {
-  reg0:0,
-  reg1:0,
-  reg2:0,
-  reg3:0,
-  reg4:0,
-  reg5:0,
-  reg6:0,
-  reg7:0,
-
-  reg8:0,
-  reg9:0,
-  rega:0,
-  regb:0,
-  vm:0,
-  ih:0,
-  sp:0,
-  pc:0
-};
-
-
-var halt = function(instr){
-  running = false;
-  console.log("halting");
-};
-
-//TODO: handle overflow, wrap around
-var addi = function(instr){
-  registers[instr.dest_reg] = 
-    registers[instr.src_reg_1] + registers[instr.src_reg_2];
-};
-
-//TODO: handle underflow eg. less than 0, wrap around
-var subi = function(instr){
-  registers[instr.dest_reg] = 
-    registers[instr.src_reg_1] - registers[instr.src_reg_2];
-};
-
-var loadl = function(instr){
-  //clear low 2 bytes
-  registers[instr.dest_reg] = (registers[instr.dest_reg] & 0xFF00) 
-  
-  //replace low 2 bytes with constant
-  registers[instr.dest_reg] = 
-    registers[instr.dest_reg] | instr.constant;
-};
-
-var loadh = function(instr){
-  //clear high 2 bytes
-  registers[instr.dest_reg] = (registers[instr.dest_reg] & 0x00FF) 
-
-  //shift constant two bytes
-  instr.constant = instr.constant << 16;
-  
-  //replace high 2 bytes with constant
-  registers[instr.dest_reg] = 
-    registers[instr.dest_reg] | instr.constant;
-};
-
-const instructions = {
-  halt:halt,
-  loadl:loadl,
-  addi:addi,
-  subi:subi,
-  loadh:loadh
+var running = function(){
+  return state.registers.halt == 0;
 };
 
 var fetch = function(){
-  var next = memory[registers.pc];
-  registers.pc += 1;
+  var next = state.memory[state.registers.pc];
+  state.registers.pc += 1;
   return next;
 };
 
@@ -94,15 +28,16 @@ var evaluate = function(instr){
    instr.src_reg_1 = REGISTERS[instr.src_reg_1];
    instr.src_reg_2 = REGISTERS[instr.src_reg_2];
 
-   const execution_function = instructions[instr.opcode];
-   execution_function(instr);
+   const execution_function = operations[instr.opcode];
+   execution_function(state.registers,instr);
 };
 
 var main = function(){
-  while(running){
+  while(running()){
     evaluate(decode(fetch()));
   }
 };
+
 
 var pack_instruction = function(instruction){
   const opcode    = instruction[0];
@@ -139,7 +74,7 @@ var pack = function(instr,field,offset){
   return instr | (field << offset);
 };
 
-var memory = [
+state.memory = [
   ["loadl", "reg1", null  , null  ,    1],
   ["loadh", "reg1", null  , null  ,    1],
   ["loadl", "reg2", null  , null  ,    2],

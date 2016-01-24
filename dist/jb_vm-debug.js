@@ -54,81 +54,22 @@ exports.REGISTERS = REGISTERS;
 var OPCODES = two_way_lookup_table(_opcodes.OPCODE_LIST);
 exports.OPCODES = OPCODES;
 
-},{"./INSTRUCTION_CONSTANTS.js":1,"./opcodes":4,"./registers":5}],3:[function(require,module,exports){
-"use strict";
+},{"./INSTRUCTION_CONSTANTS.js":1,"./opcodes":4,"./registers":6}],3:[function(require,module,exports){
+'use strict';
 
 var _constants_lookup_tables = require('./constants_lookup_tables');
 
-console.log(_constants_lookup_tables.REGISTERS);
-console.log(_constants_lookup_tables.OPCODES);
+var _operationsJs = require('./operations.js');
 
-var pc = 0;
-var running = true;
-var stack = [];
-var registers = {
-  reg0: 0,
-  reg1: 0,
-  reg2: 0,
-  reg3: 0,
-  reg4: 0,
-  reg5: 0,
-  reg6: 0,
-  reg7: 0,
+var _stateJs = require('./state.js');
 
-  reg8: 0,
-  reg9: 0,
-  rega: 0,
-  regb: 0,
-  vm: 0,
-  ih: 0,
-  sp: 0,
-  pc: 0
-};
-
-var halt = function halt(instr) {
-  running = false;
-  console.log("halting");
-};
-
-var addi = function addi(instr) {
-  debugger;
-  registers[instr.dest_reg] = registers[instr.src_reg_1] + registers[instr.src_reg_2];
-};
-
-var subi = function subi(instr) {
-  registers[instr.dest_reg] = registers[instr.src_reg_1] - registers[instr.src_reg_2];
-};
-
-var loadl = function loadl(instr) {
-  //clear low 2 bytes
-  registers[instr.dest_reg] = registers[instr.dest_reg] & 0xFF00;
-
-  //replace low 2 bytes with constant
-  registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
-};
-
-var loadh = function loadh(instr) {
-  //clear high 2 bytes
-  registers[instr.dest_reg] = registers[instr.dest_reg] & 0x00FF;
-
-  //shift constant two bytes
-  instr.constant = instr.constant << 16;
-
-  //replace high 2 bytes with constant
-  registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
-};
-
-var instructions = {
-  halt: halt,
-  loadl: loadl,
-  addi: addi,
-  subi: subi,
-  loadh: loadh
+var running = function running() {
+  return _stateJs.state.registers.halt == 0;
 };
 
 var fetch = function fetch() {
-  var next = memory[registers.pc];
-  registers.pc += 1;
+  var next = _stateJs.state.memory[_stateJs.state.registers.pc];
+  _stateJs.state.registers.pc += 1;
   return next;
 };
 
@@ -148,16 +89,14 @@ var evaluate = function evaluate(instr) {
   instr.src_reg_1 = _constants_lookup_tables.REGISTERS[instr.src_reg_1];
   instr.src_reg_2 = _constants_lookup_tables.REGISTERS[instr.src_reg_2];
 
-  var execution_function = instructions[instr.opcode];
-  execution_function(instr);
+  var execution_function = _operationsJs.operations[instr.opcode];
+  execution_function(_stateJs.state.registers, instr);
 };
 
 var main = function main() {
-  debugger;
-  while (running) {
+  while (running()) {
     evaluate(decode(fetch()));
   }
-  debugger;
 };
 
 var pack_instruction = function pack_instruction(instruction) {
@@ -195,13 +134,13 @@ var pack = function pack(instr, field, offset) {
   return instr | field << offset;
 };
 
-var memory = [["loadl", "reg1", null, null, 1], ["loadh", "reg1", null, null, 1], ["loadl", "reg2", null, null, 2], ["loadh", "reg2", null, null, 2], ["addi", "reg3", "reg1", "reg2", null], ["loadl", "reg0", null, null, 16], ["loadl", "reg4", null, null, 7], ["subi", "reg5", "reg0", "reg4", null], ["halt", null, null, null, null]].map(pack_instruction);
+_stateJs.state.memory = [["loadl", "reg1", null, null, 1], ["loadh", "reg1", null, null, 1], ["loadl", "reg2", null, null, 2], ["loadh", "reg2", null, null, 2], ["addi", "reg3", "reg1", "reg2", null], ["loadl", "reg0", null, null, 16], ["loadl", "reg4", null, null, 7], ["subi", "reg5", "reg0", "reg4", null], ["halt", null, null, null, null]].map(pack_instruction);
 
 main();
 
 console.log("packing loadl reg1 5: " + pack_instruction(["loadl", "reg1", null, null, 5]).toString(16));
 
-},{"./constants_lookup_tables":2}],4:[function(require,module,exports){
+},{"./constants_lookup_tables":2,"./operations.js":5,"./state.js":7}],4:[function(require,module,exports){
 // list of OPCODES with thier assembly name and instruction code
 "use strict";
 
@@ -225,6 +164,58 @@ var OPCODE_LIST = [
 exports.OPCODE_LIST = OPCODE_LIST;
 
 },{}],5:[function(require,module,exports){
+"use strict";
+
+exports.__esModule = true;
+var operations = {
+
+  halt: function halt(registers, instr) {
+    registers.halt = 1;
+    console.log("halting");
+
+    return registers;
+  },
+
+  //TODO: handle overflow, wrap around
+  addi: function addi(registers, instr) {
+    registers[instr.dest_reg] = registers[instr.src_reg_1] + registers[instr.src_reg_2];
+
+    return registers;
+  },
+
+  //TODO: handle underflow eg. less than 0, wrap around
+  subi: function subi(registers, instr) {
+    registers[instr.dest_reg] = registers[instr.src_reg_1] - registers[instr.src_reg_2];
+
+    return registers;
+  },
+
+  loadl: function loadl(registers, instr) {
+    //clear low 2 bytes
+    registers[instr.dest_reg] = registers[instr.dest_reg] & 0xFF00;
+
+    //replace low 2 bytes with constant
+    registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
+
+    return registers;
+  },
+
+  loadh: function loadh(registers, instr) {
+    //clear high 2 bytes
+    registers[instr.dest_reg] = registers[instr.dest_reg] & 0x00FF;
+
+    //shift constant two bytes
+    instr.constant = instr.constant << 16;
+
+    //replace high 2 bytes with constant
+    registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
+
+    return registers;
+  }
+};
+exports.operations = operations;
+
+},{}],6:[function(require,module,exports){
 
 //list of registers with their assembly name and number
 "use strict";
@@ -248,6 +239,38 @@ var REGISTER_LIST = [
 
 //program counter
 ["pc", 0xf]];
-exports.REGISTER_LIST = REGISTER_LIST;
 
-},{}]},{},[3]);
+exports.REGISTER_LIST = REGISTER_LIST;
+//registers that can only be accessed using special instructions
+var RESTRICTED_REGISTER_LIST = [
+//stops the machine
+["halt", "n/a"]];
+
+exports.RESTRICTED_REGISTER_LIST = RESTRICTED_REGISTER_LIST;
+var ALL_REGISTERS_LIST = REGISTER_LIST.concat(RESTRICTED_REGISTER_LIST);
+exports.ALL_REGISTERS_LIST = ALL_REGISTERS_LIST;
+
+},{}],7:[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _registersJs = require('./registers.js');
+
+var initialize_registers = function initialize_registers() {
+  var registers = {};
+  for (var i = 0; i < _registersJs.ALL_REGISTERS_LIST.length; i++) {
+    var reg_name = _registersJs.ALL_REGISTERS_LIST[i][0];
+    registers[reg_name] = 0;
+  }
+
+  return registers;
+};
+
+var state = {
+  registers: initialize_registers(),
+  memory: []
+};
+exports.state = state;
+
+},{"./registers.js":6}]},{},[3]);
