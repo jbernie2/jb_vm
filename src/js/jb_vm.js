@@ -75,15 +75,27 @@ var pack = function(instr,field,offset){
 };
 
 state.memory = [
-  ["loadl", "reg1", null  , null  ,    1],
-  ["loadh", "reg1", null  , null  ,    1],
-  ["loadl", "reg2", null  , null  ,    2],
-  ["loadh", "reg2", null  , null  ,    2],
-  ["addi" , "reg3", "reg1", "reg2", null],
-  ["loadl", "reg0", null  , null  ,   16],
-  ["loadl", "reg4", null  , null  ,    7],
-  ["subi" , "reg5", "reg0", "reg4", null],
-  ["halt" , null  , null  , null  , null] 
+  /*
+  ["loadl", "reg1", null  , null  ,      1],
+  ["loadh", "reg1", null  , null  ,      1],
+  ["loadl", "reg2", null  , null  ,      2],
+  ["loadh", "reg2", null  , null  ,      2],
+  ["addu" , "reg3", "reg1", "reg2",   null],
+  ["loadl", "reg0", null  , null  ,     16],
+  ["loadl", "reg4", null  , null  ,      7],
+  ["subu" , "reg5", "reg0", "reg4",   null],
+  */
+  /*
+  ["loadl", "reg0", null  , null  , 0xFFFF],
+  ["loadh", "reg0", null  , null  , 0xFFFF],
+  ["loadl", "reg1", null  , null  ,      6],
+  ["loadh", "reg1", null  , null  ,      0],
+  ["addu" , "reg2", "reg0", "reg1",   null],
+  */
+  ["loadl", "reg0", null  , null  ,      5],
+  ["loadl", "reg1", null  , null  ,      7],
+  ["subu" , "reg2", "reg0", "reg1",   null],
+  ["halt" , null  , null  , null  ,   null] 
 ].map(pack_instruction);
 
 main();

@@ -134,7 +134,25 @@ var pack = function pack(instr, field, offset) {
   return instr | field << offset;
 };
 
-_stateJs.state.memory = [["loadl", "reg1", null, null, 1], ["loadh", "reg1", null, null, 1], ["loadl", "reg2", null, null, 2], ["loadh", "reg2", null, null, 2], ["addi", "reg3", "reg1", "reg2", null], ["loadl", "reg0", null, null, 16], ["loadl", "reg4", null, null, 7], ["subi", "reg5", "reg0", "reg4", null], ["halt", null, null, null, null]].map(pack_instruction);
+_stateJs.state.memory = [
+/*
+["loadl", "reg1", null  , null  ,      1],
+["loadh", "reg1", null  , null  ,      1],
+["loadl", "reg2", null  , null  ,      2],
+["loadh", "reg2", null  , null  ,      2],
+["addu" , "reg3", "reg1", "reg2",   null],
+["loadl", "reg0", null  , null  ,     16],
+["loadl", "reg4", null  , null  ,      7],
+["subu" , "reg5", "reg0", "reg4",   null],
+*/
+/*
+["loadl", "reg0", null  , null  , 0xFFFF],
+["loadh", "reg0", null  , null  , 0xFFFF],
+["loadl", "reg1", null  , null  ,      6],
+["loadh", "reg1", null  , null  ,      0],
+["addu" , "reg2", "reg0", "reg1",   null],
+*/
+["loadl", "reg0", null, null, 5], ["loadl", "reg1", null, null, 7], ["subu", "reg2", "reg0", "reg1", null], ["halt", null, null, null, null]].map(pack_instruction);
 
 main();
 
@@ -150,11 +168,11 @@ var OPCODE_LIST = [
 //halts the machine
 ["halt", 0x00],
 
-//adds two integers
-["addi", 0x01],
+//adds two unsigned integers
+["addu", 0x01],
 
-//subtracts two integers
-["subi", 0x02],
+//subtracts two unsigned integers
+["subu", 0x02],
 
 //loads 16 bits into the least significant bytes of a register
 ["loadl", 0x03],
@@ -167,6 +185,15 @@ exports.OPCODE_LIST = OPCODE_LIST;
 "use strict";
 
 exports.__esModule = true;
+var MAX_UNSIGNED_INT = 0xFFFFFFFF;
+var MAX_SIGNED_INT = 0x7FFFFFFF;
+var HIGH_BYTES_CLEAR = 0x0000FFFF;
+var LOW_BYTES_CLEAR = 0xFFFF0000;
+
+var unsigned_cast = function unsigned_cast(x) {
+  return x >>> 0;
+};
+
 var operations = {
 
   halt: function halt(registers, instr) {
@@ -176,23 +203,28 @@ var operations = {
     return registers;
   },
 
-  //TODO: handle overflow, wrap around
-  addi: function addi(registers, instr) {
+  addu: function addu(registers, instr) {
     registers[instr.dest_reg] = registers[instr.src_reg_1] + registers[instr.src_reg_2];
-
+    // handle overflow, wrap around
+    if (registers[instr.dest_reg] > MAX_UNSIGNED_INT) {
+      registers[instr.dest_reg] = registers[instr.dest_reg] - MAX_UNSIGNED_INT;
+    }
     return registers;
   },
 
-  //TODO: handle underflow eg. less than 0, wrap around
-  subi: function subi(registers, instr) {
+  subu: function subu(registers, instr) {
     registers[instr.dest_reg] = registers[instr.src_reg_1] - registers[instr.src_reg_2];
+    // handle underflow, wrap around
+    if (registers[instr.dest_reg] < 0) {
+      registers[instr.dest_reg] = MAX_UNSIGNED_INT + registers[instr.dest_reg];
+    }
 
     return registers;
   },
 
   loadl: function loadl(registers, instr) {
     //clear low 2 bytes
-    registers[instr.dest_reg] = registers[instr.dest_reg] & 0xFF00;
+    registers[instr.dest_reg] = registers[instr.dest_reg] & LOW_BYTES_CLEAR;
 
     //replace low 2 bytes with constant
     registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
@@ -202,13 +234,13 @@ var operations = {
 
   loadh: function loadh(registers, instr) {
     //clear high 2 bytes
-    registers[instr.dest_reg] = registers[instr.dest_reg] & 0x00FF;
+    registers[instr.dest_reg] = registers[instr.dest_reg] & HIGH_BYTES_CLEAR;
 
     //shift constant two bytes
-    instr.constant = instr.constant << 16;
+    instr.constant = unsigned_cast(instr.constant << 16);
 
     //replace high 2 bytes with constant
-    registers[instr.dest_reg] = registers[instr.dest_reg] | instr.constant;
+    registers[instr.dest_reg] = unsigned_cast(registers[instr.dest_reg] | instr.constant);
 
     return registers;
   }

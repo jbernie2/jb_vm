@@ -4,11 +4,11 @@ export const OPCODE_LIST = [
   //halts the machine
   ["halt", 0x00],
 
-  //adds two integers
-  ["addi", 0x01],
+  //adds two unsigned integers
+  ["addu", 0x01],
 
-  //subtracts two integers
-  ["subi", 0x02],
+  //subtracts two unsigned integers
+  ["subu", 0x02],
 
   //loads 16 bits into the least significant bytes of a register
   ["loadl",0x03],
