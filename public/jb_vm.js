@@ -1,9 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OPCODES = exports.REGISTERS = exports.INSTR_OFFSETS = undefined;
 
-var _instruction_constantsJs = require('./instruction_constants.js');
+var _instruction_constants = require('./instruction_constants.js');
 
 var _registers = require('./registers');
 
@@ -18,14 +21,16 @@ var two_way_lookup_table = function two_way_lookup_table(values) {
   return lookup;
 };
 
-var INSTR_OFFSETS = _instruction_constantsJs.OFFSET_LIST;
-exports.INSTR_OFFSETS = INSTR_OFFSETS;
-var REGISTERS = two_way_lookup_table(_registers.REGISTER_LIST);
-exports.REGISTERS = REGISTERS;
-var OPCODES = two_way_lookup_table(_opcodes.OPCODE_LIST);
-exports.OPCODES = OPCODES;
+var INSTR_OFFSETS = exports.INSTR_OFFSETS = _instruction_constants.OFFSET_LIST;
+var REGISTERS = exports.REGISTERS = two_way_lookup_table(_registers.REGISTER_LIST);
+var OPCODES = exports.OPCODES = two_way_lookup_table(_opcodes.OPCODE_LIST);
 
 },{"./instruction_constants.js":2,"./opcodes":4,"./registers":6}],2:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 //All instructions are 32 bit
 //There are currently two instruction formats
 
@@ -42,34 +47,30 @@ exports.OPCODES = OPCODES;
 
 //offsets for each field in the instructions
 //used for extracting information from the instructions
-"use strict";
-
-exports.__esModule = true;
-var OFFSET_LIST = {
+var OFFSET_LIST = exports.OFFSET_LIST = {
   OPCODE: 24,
   DEST_REG: 20,
   SRC_REG_1: 16,
   SRC_REG_2: 12,
   CONSTANT: 0
 };
-exports.OFFSET_LIST = OFFSET_LIST;
 
 },{}],3:[function(require,module,exports){
 'use strict';
 
 var _constants_lookup_tables = require('./constants_lookup_tables');
 
-var _operationsJs = require('./operations.js');
+var _operations = require('./operations.js');
 
-var _stateJs = require('./state.js');
+var _state = require('./state.js');
 
 var running = function running() {
-  return _stateJs.state.registers.halt == 0;
+  return _state.state.registers.halt == 0;
 };
 
 var fetch = function fetch() {
-  var next = _stateJs.state.memory[_stateJs.state.registers.pc];
-  _stateJs.state.registers.pc += 1;
+  var next = _state.state.memory[_state.state.registers.pc];
+  _state.state.registers.pc += 1;
   return next;
 };
 
@@ -89,8 +90,8 @@ var evaluate = function evaluate(instr) {
   instr.src_reg_1 = _constants_lookup_tables.REGISTERS[instr.src_reg_1];
   instr.src_reg_2 = _constants_lookup_tables.REGISTERS[instr.src_reg_2];
 
-  var execution_function = _operationsJs.operations[instr.opcode];
-  execution_function(_stateJs.state.registers, instr);
+  var execution_function = _operations.operations[instr.opcode];
+  execution_function(_state.state.registers, instr);
 };
 
 var main = function main() {
@@ -134,7 +135,7 @@ var pack = function pack(instr, field, offset) {
   return instr | field << offset;
 };
 
-_stateJs.state.memory = [
+_state.state.memory = [
 /*
 ["loadl", "reg1", null  , null  ,      1],
 ["loadh", "reg1", null  , null  ,      1],
@@ -152,39 +153,93 @@ _stateJs.state.memory = [
 ["loadh", "reg1", null  , null  ,      0],
 ["addu" , "reg2", "reg0", "reg1",   null],
 */
-["loadl", "reg0", null, null, 5], ["loadl", "reg1", null, null, 7], ["subu", "reg2", "reg0", "reg1", null], ["halt", null, null, null, null]].map(pack_instruction);
+/*
+["loadl", "reg0", null  , null  ,      5],
+["loadl", "reg1", null  , null  ,      7],
+["subu" , "reg2", "reg0", "reg1",   null],
+["halt" , null  , null  , null  ,   null] 
+*/
+["loadl", "reg0", null, null, 7], ["loadl", "reg1", null, null, 7], ["eq", "reg2", "reg0", "reg1", null], ["halt", null, null, null, null]].map(pack_instruction);
 
 main();
 
 console.log("packing loadl reg1 5: " + pack_instruction(["loadl", "reg1", null, null, 5]).toString(16));
 
 },{"./constants_lookup_tables":1,"./operations.js":5,"./state.js":7}],4:[function(require,module,exports){
-// list of OPCODES with thier assembly name and instruction code
 "use strict";
 
-exports.__esModule = true;
-var OPCODE_LIST = [
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+// list of OPCODES with thier assembly name and instruction code
+var OPCODE_LIST = exports.OPCODE_LIST = [
 
 //halts the machine
 ["halt", 0x00],
 
-//adds two unsigned integers
-["addu", 0x01],
-
-//subtracts two unsigned integers
-["subu", 0x02],
-
 //loads 16 bits into the least significant bytes of a register
-["loadl", 0x03],
+["loadl", 0x01],
 
 //loads 16 bits into the most significant bytes of a register
-["loadh", 0x04]];
-exports.OPCODE_LIST = OPCODE_LIST;
+["loadh", 0x02],
+
+//adds two unsigned integers
+["addu", 0x03],
+
+//subtracts two unsigned integers
+["subu", 0x04],
+
+//multiplies two unsigned integers
+["mulu", 0x05],
+
+//divides two unsigned integers
+["divu", 0x06],
+
+//modulus of two usigned integers
+["modu", 0x07],
+
+//checks if two numbers are equal
+["eq", 0x08],
+
+//checks if two numbers are not equal
+["neq", 0x09],
+
+//checks if a number is greater than another
+["gt", 0x0a],
+
+//checks if a number is greater than or equal another
+["gteq", 0x0b],
+
+//checks if a number is less than another
+["lt", 0x0c],
+
+//checks if a number is less than or equal to another
+["lteq", 0x0d],
+
+//jumps to an address (long jump)
+["ljmp", 0x0e],
+
+//jumps to an address based on conditional (conditioanl long jump)
+["cljmp", 0x0f],
+
+//jumps to a higher memory address by an offset
+["jmph", 0x10],
+
+//jumps to a lower memory address by an offset
+["jmpl", 0x11],
+
+//jumps to a higher memory address by an offset based on conditional
+["cjmph", 0x12],
+
+//jumps to a lower memory address by an offset based on conditional
+["cjmpl", 0x13]];
 
 },{}],5:[function(require,module,exports){
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 var MAX_UNSIGNED_INT = 0xFFFFFFFF;
 var MAX_SIGNED_INT = 0x7FFFFFFF;
 var HIGH_BYTES_CLEAR = 0x0000FFFF;
@@ -194,30 +249,15 @@ var unsigned_cast = function unsigned_cast(x) {
   return x >>> 0;
 };
 
-var operations = {
+var numeric_boolean = function numeric_boolean(a) {
+  return a ? 1 : 0;
+};
+
+var operations = exports.operations = {
 
   halt: function halt(registers, instr) {
     registers.halt = 1;
     console.log("halting");
-
-    return registers;
-  },
-
-  addu: function addu(registers, instr) {
-    registers[instr.dest_reg] = registers[instr.src_reg_1] + registers[instr.src_reg_2];
-    // handle overflow, wrap around
-    if (registers[instr.dest_reg] > MAX_UNSIGNED_INT) {
-      registers[instr.dest_reg] = registers[instr.dest_reg] - MAX_UNSIGNED_INT;
-    }
-    return registers;
-  },
-
-  subu: function subu(registers, instr) {
-    registers[instr.dest_reg] = registers[instr.src_reg_1] - registers[instr.src_reg_2];
-    // handle underflow, wrap around
-    if (registers[instr.dest_reg] < 0) {
-      registers[instr.dest_reg] = MAX_UNSIGNED_INT + registers[instr.dest_reg];
-    }
 
     return registers;
   },
@@ -243,17 +283,73 @@ var operations = {
     registers[instr.dest_reg] = unsigned_cast(registers[instr.dest_reg] | instr.constant);
 
     return registers;
+  },
+
+  addu: function addu(registers, instr) {
+    registers[instr.dest_reg] = registers[instr.src_reg_1] + registers[instr.src_reg_2];
+    // handle overflow, wrap around
+    if (registers[instr.dest_reg] > MAX_UNSIGNED_INT) {
+      registers[instr.dest_reg] = registers[instr.dest_reg] - MAX_UNSIGNED_INT;
+    }
+    return registers;
+  },
+
+  subu: function subu(registers, instr) {
+    registers[instr.dest_reg] = registers[instr.src_reg_1] - registers[instr.src_reg_2];
+    // handle underflow, wrap around
+    if (registers[instr.dest_reg] < 0) {
+      registers[instr.dest_reg] = MAX_UNSIGNED_INT + registers[instr.dest_reg];
+    }
+
+    return registers;
+  },
+
+  eq: function eq(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] === registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  neq: function neq(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] !== registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  gt: function gt(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] > registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  gteq: function gteq(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] >= registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  lt: function lt(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] < registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  lteq: function lteq(registers, instr) {
+    registers[instr.dest_reg] = numeric_boolean(registers[instr.src_reg_1] <= registers[instr.src_reg_2]);
+
+    return registers;
   }
 };
-exports.operations = operations;
 
 },{}],6:[function(require,module,exports){
-
-//list of registers with their assembly name and number
 "use strict";
 
-exports.__esModule = true;
-var REGISTER_LIST = [
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+//list of registers with their assembly name and number
+var REGISTER_LIST = exports.REGISTER_LIST = [
 //general purpose registers
 ["reg0", 0x0], ["reg1", 0x1], ["reg2", 0x2], ["reg3", 0x3], ["reg4", 0x4], ["reg5", 0x5], ["reg6", 0x6], ["reg7", 0x7], ["reg8", 0x8],
 
@@ -272,37 +368,36 @@ var REGISTER_LIST = [
 //program counter
 ["pc", 0xf]];
 
-exports.REGISTER_LIST = REGISTER_LIST;
 //registers that can only be accessed using special instructions
-var RESTRICTED_REGISTER_LIST = [
+var RESTRICTED_REGISTER_LIST = exports.RESTRICTED_REGISTER_LIST = [
 //stops the machine
 ["halt", "n/a"]];
 
-exports.RESTRICTED_REGISTER_LIST = RESTRICTED_REGISTER_LIST;
-var ALL_REGISTERS_LIST = REGISTER_LIST.concat(RESTRICTED_REGISTER_LIST);
-exports.ALL_REGISTERS_LIST = ALL_REGISTERS_LIST;
+var ALL_REGISTERS_LIST = exports.ALL_REGISTERS_LIST = REGISTER_LIST.concat(RESTRICTED_REGISTER_LIST);
 
 },{}],7:[function(require,module,exports){
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.state = undefined;
 
-var _registersJs = require('./registers.js');
+var _registers = require('./registers.js');
 
 var initialize_registers = function initialize_registers() {
   var registers = {};
-  for (var i = 0; i < _registersJs.ALL_REGISTERS_LIST.length; i++) {
-    var reg_name = _registersJs.ALL_REGISTERS_LIST[i][0];
+  for (var i = 0; i < _registers.ALL_REGISTERS_LIST.length; i++) {
+    var reg_name = _registers.ALL_REGISTERS_LIST[i][0];
     registers[reg_name] = 0;
   }
 
   return registers;
 };
 
-var state = {
+var state = exports.state = {
   registers: initialize_registers(),
   memory: []
 };
-exports.state = state;
 
 },{"./registers.js":6}]},{},[3]);

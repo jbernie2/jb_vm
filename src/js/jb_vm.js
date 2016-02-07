@@ -92,9 +92,15 @@ state.memory = [
   ["loadh", "reg1", null  , null  ,      0],
   ["addu" , "reg2", "reg0", "reg1",   null],
   */
+  /*
   ["loadl", "reg0", null  , null  ,      5],
   ["loadl", "reg1", null  , null  ,      7],
   ["subu" , "reg2", "reg0", "reg1",   null],
+  ["halt" , null  , null  , null  ,   null] 
+  */
+  ["loadl", "reg0", null  , null  ,      7],
+  ["loadl", "reg1", null  , null  ,      7],
+  ["eq" ,   "reg2", "reg0", "reg1",   null],
   ["halt" , null  , null  , null  ,   null] 
 ].map(pack_instruction);
 

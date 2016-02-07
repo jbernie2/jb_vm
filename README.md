@@ -8,8 +8,6 @@ Install Prerequisites:
 
   1. [node js](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
   2. [npm](http://blog.npmjs.org/post/85484771375/how-to-install-npm)
-  3. [grunt-cli](http://gruntjs.com/getting-started)
-
 
 Clone This Repo:
 
@@ -20,13 +18,17 @@ Install Dependencies Via NPM:
     $ cd jb_vm
     $ npm install
 
-Building The Project
+Testing
 
-    $ grunt build
+    $ npm test
 
-Running Locally
+Building
 
-    Open dist/index.html in your browser
+    $ npm run build
+
+Running
+
+    Open public/index.html in your browser
 
 ## License
 MIT License

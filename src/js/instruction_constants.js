@@ -15,9 +15,9 @@
 //offsets for each field in the instructions
 //used for extracting information from the instructions
 export const OFFSET_LIST = {
-  OPCODE   : 24,
-  DEST_REG : 20,
-  SRC_REG_1: 16,
-  SRC_REG_2: 12, 
-  CONSTANT :  0
+  OPCODE    : 24,
+  DEST_REG  : 20,
+  SRC_REG_1 : 16,
+  SRC_REG_2 : 12, 
+  CONSTANT  :  0
 };

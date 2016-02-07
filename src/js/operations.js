@@ -7,33 +7,16 @@ const unsigned_cast = function(x){
   return x >>> 0;
 };
 
+const numeric_boolean = function(a){
+  return (a ? 1 : 0);
+}
+
 export const operations = {
 
   halt: function(registers, instr){
     registers.halt = 1;
     console.log("halting");
   
-    return registers;
-  },
-
-  addu: function(registers, instr){
-    registers[instr.dest_reg] = 
-      registers[instr.src_reg_1] + registers[instr.src_reg_2];
-    // handle overflow, wrap around
-    if(registers[instr.dest_reg] > MAX_UNSIGNED_INT){
-      registers[instr.dest_reg] = registers[instr.dest_reg] - MAX_UNSIGNED_INT;
-    }
-    return registers;
-  },
-
-  subu: function(registers, instr){
-    registers[instr.dest_reg] = 
-      registers[instr.src_reg_1] - registers[instr.src_reg_2];
-    // handle underflow, wrap around
-    if(registers[instr.dest_reg] < 0){
-      registers[instr.dest_reg] = MAX_UNSIGNED_INT + registers[instr.dest_reg];
-    }
-
     return registers;
   },
 
@@ -59,6 +42,69 @@ export const operations = {
     registers[instr.dest_reg] = 
       unsigned_cast(registers[instr.dest_reg] | instr.constant);
     
+    return registers;
+  },
+
+  addu: function(registers, instr){
+    registers[instr.dest_reg] = 
+      registers[instr.src_reg_1] + registers[instr.src_reg_2];
+    // handle overflow, wrap around
+    if(registers[instr.dest_reg] > MAX_UNSIGNED_INT){
+      registers[instr.dest_reg] = registers[instr.dest_reg] - MAX_UNSIGNED_INT;
+    }
+    return registers;
+  },
+
+  subu: function(registers, instr){
+    registers[instr.dest_reg] = 
+      registers[instr.src_reg_1] - registers[instr.src_reg_2];
+    // handle underflow, wrap around
+    if(registers[instr.dest_reg] < 0){
+      registers[instr.dest_reg] = MAX_UNSIGNED_INT + registers[instr.dest_reg];
+    }
+
+    return registers;
+  },
+
+  eq: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] ===  registers[instr.src_reg_2]);
+
+    return registers;
+  },
+  
+  neq: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] !==  registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  gt: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] > registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  gteq: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] >=  registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  lt: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] < registers[instr.src_reg_2]);
+
+    return registers;
+  },
+
+  lteq: function(registers, instr){
+    registers[instr.dest_reg] = 
+      numeric_boolean(registers[instr.src_reg_1] <=  registers[instr.src_reg_2]);
+
     return registers;
   }
 };
